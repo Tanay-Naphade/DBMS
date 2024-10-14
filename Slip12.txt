@@ -1,0 +1,40 @@
+CREATE TABLE Library (
+    book_id INT PRIMARY KEY,
+    title VARCHAR(100),
+    author VARCHAR(100),
+    published_date DATE,
+    quantity INT
+);
+
+CREATE TABLE Library_Audit (
+    audit_id INT AUTO_INCREMENT PRIMARY KEY,
+    book_id INT,
+    title VARCHAR(100),
+    author VARCHAR(100),
+    published_date DATE,
+    quantity INT,
+    action VARCHAR(10), -- 'UPDATE' or 'DELETE'
+    action_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+DELIMITER //
+
+CREATE TRIGGER after_library_update
+AFTER UPDATE ON Library
+FOR EACH ROW
+BEGIN
+    INSERT INTO Library_Audit (book_id, title, author, published_date, quantity, action)
+    VALUES (OLD.book_id, OLD.title, OLD.author, OLD.published_date, OLD.quantity, 'UPDATE');
+END;
+//
+
+CREATE TRIGGER after_library_delete
+AFTER DELETE ON Library
+FOR EACH ROW
+BEGIN
+    INSERT INTO Library_Audit (book_id, title, author, published_date, quantity, action)
+    VALUES (OLD.book_id, OLD.title, OLD.author, OLD.published_date, OLD.quantity, 'DELETE');
+END;
+//
+
+DELIMITER ;
